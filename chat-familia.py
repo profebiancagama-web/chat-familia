@@ -16,6 +16,9 @@ supabase: Client = init_connection()
 st.set_page_config(page_title="Chat da Família", page_icon="💬", layout="centered")
 st.title("💬 Nosso Chat de Família")
 
+# ATUALIZAÇÃO AUTOMÁTICA: O chat vai recarregar sozinho a cada 4 segundos para buscar novas mensagens
+st.fragment(run_every=4)
+
 if "usuario" not in st.session_state:
     st.subheader("Quem está acessando?")
     nome = st.selectbox("Selecione seu nome:", ["Selecione...", "Mãe", "Bibia", "Thiaguinho"])
@@ -51,16 +54,26 @@ else:
             }
             try:
                 supabase.table("mensagens").insert(dados).execute()
-                # NOTIFICAÇÃO: Caixinha no canto da tela com coração
-                st.toast(f"Mensagem enviada com amor por {usuario_atual}! ❤️", icon="❤️")
-                # EFEITO VISUAL: Balões coloridos subindo na tela toda!
+                # Mostra o aviso e solta os balões na hora do envio
+                st.toast(f"Mensagem enviada! ❤️", icon="❤️")
                 st.balloons()
                 st.rerun()
             except Exception as e:
                 st.error(f"Erro detalhado do Supabase: {e}")
 
+    # Guarda quantas mensagens tínhamos antes de atualizar
+    if "total_mensagens" not in st.session_state:
+        st.session_state.total_mensagens = 0
+
     mensagens = buscar_mensagens()
     
+    # Se chegou mensagem nova de outra pessoa, solta uma notificação na tela!
+    if len(mensagens) > st.session_state.total_mensagens and st.session_state.total_mensagens > 0:
+        st.toast("Nova mensagem recebida no chat! 💬", icon="💬")
+    
+    # Atualiza o contador na memória
+    st.session_state.total_mensagens = len(mensagens)
+
     area_mensagens = st.container()
     with area_mensagens:
         if not mensagens:
