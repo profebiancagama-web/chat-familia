@@ -4,8 +4,7 @@ import datetime
 
 # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
 SUPABASE_URL = "https://kicbsagvmnjrpfkimawh.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpY2JzYWd2bW5qcnBma2ltYXdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU4NzUzNzIsImV4cCI6MjAzMTQ1MTM3Mn0.bndfU3YyNmswMG54X0RSc1FzMms4X2h0Yk9pZnMwX2t4bjl2MXM0"
-
+SUPABASE_KEY = "sb_publishable_0wEQVnYIGxLuudVaXyPQiQ_znm8Qut2"
 @st.cache_resource
 def init_connection():
     return create_client(SUPABASE_URL, SUPABASE_KEY)
