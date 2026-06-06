@@ -2,6 +2,7 @@ import streamlit as st
 from supabase import create_client, Client
 import datetime
 import streamlit.components.v1 as components
+from streamlit_autorefresh import st_autorefresh
 
 # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
 SUPABASE_URL = "https://kicbsagvmnjrpfkimawh.supabase.co"
@@ -17,8 +18,8 @@ supabase: Client = init_connection()
 st.set_page_config(page_title="Chat da Família", page_icon="💬", layout="centered")
 st.title("💬 Nosso Chat de Família")
 
-# O chat verifica o banco de dados sozinho a cada 3 segundos
-st.fragment(run_every=3)
+# ATUALIZADOR DEFINITIVO: Força o app inteiro a rodar sozinho a cada 3 segundos
+st_autorefresh(interval=3000, key="datarefresh")
 
 if "usuario" not in st.session_state:
     st.subheader("Quem está acessando?")
