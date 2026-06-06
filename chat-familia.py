@@ -1,7 +1,6 @@
 import streamlit as st
 from supabase import create_client, Client
 import datetime
-import streamlit.components.v1 as components
 
 # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
 SUPABASE_URL = "https://kicbsagvmnjrpfkimawh.supabase.co"
@@ -16,10 +15,6 @@ supabase: Client = init_connection()
 # --- INTERFACE DO CHAT ---
 st.set_page_config(page_title="Chat da Família", page_icon="💬", layout="centered")
 st.title("💬 Nosso Chat de Família")
-
-# Cria uma caixinha na memória para saber se acabou de mandar mensagem
-if "disparar_coracoes" not in st.session_state:
-    st.session_state.disparar_coracoes = False
 
 if "usuario" not in st.session_state:
     st.subheader("Quem está acessando?")
@@ -56,18 +51,16 @@ else:
             }
             try:
                 supabase.table("mensagens").insert(dados).execute()
-                # Ativa o efeito dos corações
-                st.session_state.disparar_coracoes = True
-                st.toast(f"Mensagem enviada por {usuario_atual}!", icon="❤️")
+                # NOTIFICAÇÃO: Caixinha no canto da tela com coração
+                st.toast(f"Mensagem enviada com amor por {usuario_atual}! ❤️", icon="❤️")
+                # EFEITO VISUAL: Balões coloridos subindo na tela toda!
+                st.balloons()
                 st.rerun()
             except Exception as e:
                 st.error(f"Erro detalhado do Supabase: {e}")
 
     mensagens = buscar_mensagens()
     
-    if mensagens:
-        st.caption(f"Status: Conectado ao banco. {len(mensagens)} mensagens carregadas.")
-
     area_mensagens = st.container()
     with area_mensagens:
         if not mensagens:
@@ -85,39 +78,3 @@ else:
         
         if botao_enviar and nova_msg:
             enviar_mensagem(nova_msg)
-
-    # --- TRUQUE DOS CORAÇÕES EM JAVASCRIPT ---
-    if st.session_state.disparar_coracoes:
-        st.session_state.disparar_coracoes = False # Desativa para a próxima vez
-        
-        # Injeta o efeito visual dos corações subindo na tela
-        components.html(
-            """
-            <div id="coracoes-container" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:99999;"></div>
-            <script>
-                const container = document.getElementById('coracoes-container');
-                const emojis = ['❤️', '💖', '💝', '💕', '💗'];
-                
-                for (let i = 0; i < 40; i++) {
-                    const herat = document.createElement('div');
-                    herat.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-                    herat.style.position = 'absolute';
-                    herat.style.bottom = '-50px';
-                    herat.style.left = Math.random() * 100 + 'vw';
-                    herat.style.fontSize = (Math.random() * 20 + 20) + 'px';
-                    herat.style.transition = 'transform ' + (Math.random() * 2 + 2) + 's linear, opacity ' + (Math.random() * 2 + 2) + 's linear';
-                    herat.style.opacity = '1';
-                    
-                    container.appendChild(herat);
-                    
-                    setTimeout(() => {
-                        herat.style.transform = 'translateY(-110vh) translateX(' + (Math.random() * 100 - 50) + 'px)';
-                        herat.style.opacity = '0';
-                    }, 50);
-                    
-                    setTimeout(() => { herat.remove(); }, 4000);
-                }
-            </script>
-            """,
-            height=0
-        )
