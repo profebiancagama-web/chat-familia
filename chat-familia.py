@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client, Client
 import datetime
+import streamlit.components.v1 as components
 
 # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
 SUPABASE_URL = "https://kicbsagvmnjrpfkimawh.supabase.co"
@@ -16,8 +17,8 @@ supabase: Client = init_connection()
 st.set_page_config(page_title="Chat da Família", page_icon="💬", layout="centered")
 st.title("💬 Nosso Chat de Família")
 
-# ATUALIZAÇÃO AUTOMÁTICA: O chat vai recarregar sozinho a cada 4 segundos para buscar novas mensagens
-st.fragment(run_every=4)
+# O chat verifica o banco de dados sozinho a cada 3 segundos
+st.fragment(run_every=3)
 
 if "usuario" not in st.session_state:
     st.subheader("Quem está acessando?")
@@ -54,25 +55,37 @@ else:
             }
             try:
                 supabase.table("mensagens").insert(dados).execute()
-                # Mostra o aviso e solta os balões na hora do envio
-                st.toast(f"Mensagem enviada! ❤️", icon="❤️")
-                st.balloons()
                 st.rerun()
             except Exception as e:
                 st.error(f"Erro detalhado do Supabase: {e}")
 
-    # Guarda quantas mensagens tínhamos antes de atualizar
-    if "total_mensagens" not in st.session_state:
-        st.session_state.total_mensagens = 0
+    # Inicializa o guardador do histórico na memória
+    if "ultima_quantidade_msg" not in st.session_state:
+        st.session_state.ultima_quantidade_msg = None
 
     mensagens = buscar_mensagens()
-    
-    # Se chegou mensagem nova de outra pessoa, solta uma notificação na tela!
-    if len(mensagens) > st.session_state.total_mensagens and st.session_state.total_mensagens > 0:
-        st.toast("Nova mensagem recebida no chat! 💬", icon="💬")
-    
-    # Atualiza o contador na memória
-    st.session_state.total_mensagens = len(mensagens)
+    total_atual = len(mensagens)
+
+    # LÓGICA DA NOTIFICAÇÃO EM TEXTO E SOM:
+    if st.session_state.ultima_quantidade_msg is not None:
+        if total_atual > st.session_state.ultima_quantidade_msg:
+            ultima_msg = mensagens[-1]
+            # Se a mensagem veio de outra pessoa, avisa e toca o som!
+            if ultima_msg["usuario"] != usuario_atual:
+                st.toast(f"Nova mensagem de {ultima_msg['usuario']}! 💬", icon="💬")
+                
+                # Injeta um player invisível de áudio para tocar o barulho de notificação
+                components.html(
+                    """
+                    <audio autoplay style="display:none;">
+                        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav" type="audio/wav">
+                    </audio>
+                    """,
+                    height=0
+                )
+
+    # Atualiza o guardador com o total atual de mensagens
+    st.session_state.ultima_quantidade_msg = total_atual
 
     area_mensagens = st.container()
     with area_mensagens:
