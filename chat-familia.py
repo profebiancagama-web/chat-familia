@@ -3,6 +3,7 @@ from supabase import create_client, Client
 import datetime
 
 # --- CONFIGURAÇÃO DO BANCO DE DADOS ---
+# --- CONFIGURAÇÃO DO BANCO DE DADOS ---
 SUPABASE_URL = "https://kicbsagvmnjrpfkimawh.supabase.co"
 SUPABASE_KEY = "sb_publishable_0wEQVnYIGxLuudVaXyPQiQ_znm8Qut2"
 @st.cache_resource
