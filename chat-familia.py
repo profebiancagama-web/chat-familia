@@ -36,7 +36,8 @@ else:
         try:
             resposta = supabase.table("mensagens").select("*").order("criado_em", ascending=True).execute()
             return resposta.data
-        except Exception:
+        except Exception as e:
+            st.error(f"Erro ao buscar mensagens: {e}")
             return []
 
     def enviar_mensagem(texto):
@@ -48,7 +49,12 @@ else:
                 "hora": agora.strftime("%H:%M"),
                 "criado_em": agora.isoformat()
             }
-            supabase.table("mensagens").insert(dados).execute()
+            try:
+                supabase.table("mensagens").insert(dados).execute()
+                st.success("Mensagem enviada!")
+            except Exception as e:
+                # Esse bloco vai nos mostrar o erro real sem esconder nada!
+                st.error(f"Erro detalhado do Supabase: {e}")
 
     mensagens = buscar_mensagens()
     
@@ -69,4 +75,4 @@ else:
         
         if botao_enviar and nova_msg:
             enviar_mensagem(nova_msg)
-            st.rerun()
+            # Retiramos o st.rerun() temporariamente daqui para dar tempo de você ler o erro na tela caso ele aconteça
